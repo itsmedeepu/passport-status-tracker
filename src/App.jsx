@@ -26,12 +26,8 @@ import {
   CircularProgress,
   Divider,
   Avatar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Link
+  Link,
+  Tooltip // Added Tooltip
 } from '@mui/material';
 import {
   Search,
@@ -130,7 +126,7 @@ const getStageFromMsgKey = (key, statusMessage = "") => {
     'trackstatus.submitted': 0,
     'trackstatus.granted': 1,
     'trackstatus.police.verification': 2,
-    'trackstatus.review': 3, // New mapping for review
+    'trackstatus.review': 3,
     'trackstatus.pre.verification.printed': 4,
     'trackstatus.dispatched': 5,
     'trackstatus.delivered': 6
@@ -142,11 +138,11 @@ const getStageFromMsgKey = (key, statusMessage = "") => {
   if (normalizedMsg.includes('delivered')) return 6;
   if (normalizedMsg.includes('dispatched')) return 5;
   if (normalizedMsg.includes('printed') || normalizedMsg.includes('printing')) return 4;
-  if (normalizedMsg.includes('review')) return 3; // Catches "Under Review"
+  if (normalizedMsg.includes('review')) return 3;
   if (normalizedMsg.includes('police')) return 2;
   if (normalizedMsg.includes('submitted')) return 0;
   
-  return 2; // Default to mid-process (Police/Verification) if unknown
+  return 2; 
 };
 
 // --- Theme Setup ---
@@ -155,14 +151,14 @@ const getDesignTokens = (mode) => ({
   palette: {
     mode,
     primary: {
-      main: mode === 'dark' ? '#60a5fa' : '#2563eb', // Blue 400/600
+      main: mode === 'dark' ? '#60a5fa' : '#2563eb',
     },
     secondary: {
-      main: mode === 'dark' ? '#34d399' : '#10b981', // Emerald 400/500
+      main: mode === 'dark' ? '#34d399' : '#10b981',
     },
     background: {
-      default: mode === 'dark' ? '#0f172a' : '#f8fafc', // Slate 900 / Slate 50
-      paper: mode === 'dark' ? '#1e293b' : '#ffffff', // Slate 800 / White
+      default: mode === 'dark' ? '#0f172a' : '#f8fafc',
+      paper: mode === 'dark' ? '#1e293b' : '#ffffff',
     },
     text: {
       primary: mode === 'dark' ? '#f1f5f9' : '#0f172a',
@@ -182,7 +178,7 @@ const getDesignTokens = (mode) => ({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundImage: 'none', // Remove default gradient in dark mode
+          backgroundImage: 'none',
         },
       },
     },
@@ -230,22 +226,12 @@ export default function App() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const [mode, setMode] = useState(prefersDarkMode ? 'dark' : 'light');
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [visitorCount, setVisitorCount] = useState(12450); // Initial fake count
-  const [helpOpen, setHelpOpen] = useState(false); // State for help dialog
+  const [visitorCount, setVisitorCount] = useState(12450);
 
   const theme = useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
 
   const toggleColorMode = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-  };
-
-  // Help Dialog Handlers
-  const handleHelpOpen = () => {
-    setHelpOpen(true);
-  };
-
-  const handleHelpClose = () => {
-    setHelpOpen(false);
   };
 
   // Update time every second
@@ -254,7 +240,6 @@ export default function App() {
       setCurrentTime(new Date());
     }, 1000);
     
-    // Simulate visitor count increment on load
     const randomIncrement = Math.floor(Math.random() * 15);
     setVisitorCount(prev => prev + randomIncrement);
 
@@ -275,7 +260,6 @@ export default function App() {
       return;
     }
 
-    // Update Recent Searches (Keep only last 2 unique)
     setRecentSearches(prev => {
       const newHistory = [fileNumber, ...prev.filter(f => f !== fileNumber)];
       return newHistory.slice(0, 2);
@@ -287,7 +271,6 @@ export default function App() {
     setCorsWarning(false);
 
     try {
-      // Constructing the request payload as specified
       const payload = {
         requestResponseMap: {
           fileNo: fileNumber,
@@ -316,10 +299,8 @@ export default function App() {
       const dataMap = jsonResponse.requestResponseMap;
       const appStatus = dataMap.applicationStatus ? dataMap.applicationStatus[0] : {};
       
-      // Determine Status Message
       const statusMsg = dataMap.statusMessage || appStatus.STATUS_MESSAGE || "";
 
-      // Parsing logic based on the API structure
       const stageIndex = getStageFromMsgKey(dataMap.msgKey || appStatus.TXT_MSG_KEY, statusMsg);
       const rpoName = getRpoName(dataMap.fileNo);
       
@@ -402,33 +383,21 @@ export default function App() {
                 <IconButton onClick={toggleColorMode} color="inherit">
                   {mode === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                 </IconButton>
-                <IconButton 
-                  color="inherit" 
-                  onClick={handleHelpOpen}
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                >
-                  <HelpCircle size={20} />
-                </IconButton>
+                
+                {/* Tooltip added here instead of Click Handler */}
+                <Tooltip title="Any querys please refer offical website. Passport Seva" arrow>
+                    <IconButton 
+                    color="inherit" 
+                    sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                    >
+                    <HelpCircle size={20} />
+                    </IconButton>
+                </Tooltip>
               </Box>
             </Box>
           </Toolbar>
         </Container>
       </AppBar>
-
-      {/* Help Dialog */}
-      <Dialog open={helpOpen} onClose={handleHelpClose}>
-        <DialogTitle>Help & Support</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Any querys please refer offical website. Passport Seva
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleHelpClose} autoFocus>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <Container maxWidth="md" sx={{ py: 6, pb: 6, minHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
         
