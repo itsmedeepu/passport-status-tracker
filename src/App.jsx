@@ -53,7 +53,7 @@ import {
 } from 'lucide-react';
 
 // --- Configuration ---
-
+const MAINTENANCE_MODE = true;
 const API_ENDPOINT = "https://api2.passportindia.gov.in/v1/online/trackStatusForFileNo";
 
 // Updated Stages to include RPO Review
@@ -66,6 +66,12 @@ const STAGES = [
   { id: 6, title: 'Dispatched', description: 'Passport dispatched via Speed Post.', icon: Truck },
   { id: 7, title: 'Passport Delivered', description: 'Passport delivered to applicant.', icon: PackageCheck },
 ];
+
+
+
+
+
+
 
 // Helper to determine RPO from File Number prefix
 const getRpoName = (fileNo) => {
@@ -280,6 +286,7 @@ export default function App() {
 
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
+        mode:"cors",
         headers: {
           'Content-Type': 'application/json',
         },
@@ -338,6 +345,73 @@ export default function App() {
     setError('');
     setCorsWarning(false);
   };
+
+
+  
+if (MAINTENANCE_MODE) {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          bgcolor: "background.default",
+          px: 2,
+        }}
+      >
+        <Paper
+          elevation={6}
+          sx={{
+            maxWidth: 600,
+            width: "100%",
+            p: 5,
+            textAlign: "center",
+            borderRadius: 3,
+          }}
+        >
+          <AlertCircle
+            size={70}
+            color={theme.palette.warning.main}
+            style={{ marginBottom: 20 }}
+          />
+
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            We'll Be Back Soon
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
+            PassportTrack is currently undergoing scheduled maintenance to
+            improve performance and reliability.
+          </Typography>
+
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            Our services are temporarily unavailable. Please check back shortly.
+          </Alert>
+
+          <Typography variant="body2" color="text.secondary">
+            Thank you for your patience.
+          </Typography>
+
+          <Typography
+            variant="caption"
+            display="block"
+            sx={{ mt: 4 }}
+            color="text.disabled"
+          >
+            © {new Date().getFullYear()} PassportTrack
+          </Typography>
+        </Paper>
+      </Box>
+    </ThemeProvider>
+  );
+}
 
   return (
     <ThemeProvider theme={theme}>
@@ -622,7 +696,8 @@ export default function App() {
             &copy; {new Date().getFullYear()} PassportTrack. Not affiliated with the Govt.
           </Typography>
         </Box>
-        
+
+       
       </Container>
     </ThemeProvider>
   );
